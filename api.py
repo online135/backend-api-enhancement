@@ -6,6 +6,7 @@ from flask import Flask, request, abort
 from datetime import timedelta, datetime
 import json
 import os
+import sqlite3
 
 i = 0
 
@@ -43,6 +44,7 @@ def aws_usage():
     
         return usage_all
 
+
 @app.route("/daily_aws_usage", methods=['GET'])
 def daily_aws_usage():
 
@@ -51,7 +53,7 @@ def daily_aws_usage():
     lineItem_UsageAccountID = request.args.get('lineItem_UsageAccountID')
 
     StartEnd = """
-        select product_ProductName, min(lineItem_UsageStartDate), max(lineItem_UsageEndDate)
+        select all product_ProductName, min(lineItem_UsageStartDate), max(lineItem_UsageEndDate), lineItem_UnblendedCost
         from aws_usage
         where lineItem_UsageAccountID = ?
         group by product_ProductName
@@ -62,8 +64,10 @@ def daily_aws_usage():
     
     # query_date 為 list 裡面放多個tuple, 格式為 [(服務1, 最小日期, 最大日期),(服務2, 最小日期, 最大日期),(服務3, 最小日期, 最大日期)]
     # query_date[0] 拿出 (服務1, 最小日期, 最大日期)
-    # query_date[0][0] 拿出 某服務; query_date[0][1] 拿出最小日期; query_date[0][2] 拿出最大日期
+    # query_date[0][0] 拿出 某服務; query_date[0][1] 拿出最小日期; query_date[0][2] 拿出最大日期; query_date[0][3] 拿出
     #datetime.strptime("2018-01-31", "%Y-%m-%d")
+    print(query_date[0])
+    print(query_date[0][0])
 
     delta = timedelta(days=1)
     total_days = datetime.strptime(query_date[1][2], "%Y-%m-%d") + delta - datetime.strptime(query_date[1][1], "%Y-%m-%d")
@@ -89,11 +93,26 @@ def daily_aws_usage():
     for j in range(i):
         print(datetime.strptime(query_date[1][1], "%Y-%m-%d") + timedelta(days=j))
 
-    CountMoney = """
-        select lineItem_UnblendedCost
-        from aws_usage
-        where lineItem
-        """
+    conn = sqlite3.connect('aws_usage.sqlite')
+
+    cur = conn.cursor()
+
+    cur.execute('DROP TABLE IF EXISTS temp')
+    
+    cur.execute('''
+        CREATE TABLE "temp"(
+        "TempTime" TEXT,
+        "Cost" TEXT)
+        ''')
+
+    for j in range(i):
+        TempTime = datetime.strptime(query_date[1][1], "%Y-%m-%d") + timedelta(days=j)
+
+        cur.execute('''INSERT INTO temp(TempTime,Cost)
+            VALUES (?,?)''',(TempTime,None))
+
+        conn.commit()
+        
 
     return 'ok'
 
@@ -108,6 +127,8 @@ def index():
     #query_data = db.engine.execute(sql_cmd)
     #print(query_data)
     return 'ok'
+
+
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
