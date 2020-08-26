@@ -15,6 +15,7 @@ cur = conn.cursor()
 cur.execute('DROP TABLE IF EXISTS aws_usage')
 cur.execute('''
 CREATE TABLE "aws_usage"(
+    "index" INTEGER PRIMARY KEY AUTOINCREMENT,
     "bill_PayerAccountId" REAL,
     "lineItem_UnblendedCost"  REAL,
     "lineItem_UnblendedRate"   REAL,
