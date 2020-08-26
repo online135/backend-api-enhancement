@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel=stylesheet type="text/css" href="coronavirus.css">
+    <script>
+      function globalAPI() {
+        var httpReq = new XMLHttpRequest();
+
+        httpReq.open("GET", "http://127.0.0.1:5000/aws_usage?lineItem_UsageAccountID=484234000000.0", true); //true for async
+        httpReq.send(null);
+        httpReq.onreadystatechange = function() {
+          if (httpReq.readyState == 4 && httpReq.status == 200) {
+            var str = JSON.parse(httpReq.responseText);
+            document.getElementById("ShowtextC").innerHTML = ("AWS Data Transfer : " + str["AWS Data Transfer"]);
+			document.getElementById("ShowtextD").innerHTML = ("Amazon Elastic Compute Cloud : " + str["Amazon Elastic Compute Cloud"]);
+          }
+        };
+      }
+    </script>
+    <script language="JavaScript">
+      function ShowTime(){
+        document.getElementById('showbox').innerHTML = new Date();
+        setTimeout('ShowTime()',1000);
+      }
+    </script>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <nav class="topnav">
+      <a href="index.html" class="active">Global</a>
+      <a href="asia.html">Asia</a>
+      <a href="euro.html">Euro</a>
+      <a href="america.html">America</a>
+    </nav>
+
+    <!-- Main -->
+    <div style="text-align: center;">
+      <h2 style="font-size: 52px; color:white;margin-bottom: 12px">
+        <i>Test Website</i>
+      </h2>
+      <h2 style="font-size: 52px; color:white;margin-bottom: 12px">
+        <i>This is test website</i>
+      </h2>
+      <body style="font-size: 26px; color:yellow;margin-bottom: 6px", onload="ShowTime()">
+        <div id="showbox"></div>
+      </body>
+      <button onclick="globalAPI()">lineItem_UsageAccountID=484234000000</button>
+	  <h3 style="font-size: 13px; color:white;"id="ShowtextC">AWS Data Transfer :</h3>
+	  <h3 style="font-size: 13px; color:white;"id="ShowtextD">Amazon Elastic Compute Cloud :</h3>
+    </div>
+  </body>
+  <footer style="font-size: 13px; position: absolute; bottom: 10px; right: 10px;">
+    By online135
+  </footer>
+</html>
