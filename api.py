@@ -8,11 +8,6 @@ import json
 import os
 import sqlite3
 
-i = 0
-
-#        where lineItem_UsageAccountID = 484234000000.0
-#        group by product_ProductName
-
 db = SQLAlchemy()
 
 app = Flask(__name__)
@@ -47,8 +42,6 @@ def aws_usage():
 
 @app.route("/daily_aws_usage", methods=['GET'])
 def daily_aws_usage():
-
-    global i
     
     lineItem_UsageAccountID = request.args.get('lineItem_UsageAccountID')
 
@@ -60,27 +53,18 @@ def daily_aws_usage():
         """
 
     query_date =db.engine.execute(StartEnd,lineItem_UsageAccountID).fetchall()
-    #print(query_date)
     
     TempDictbig = {}
+    
     # query_date 為 list 裡面放多個tuple, 格式為 [(編號1, 服務, 起始時間, 結束時間, 使用量),(編號2, 服務, 起始時間, 結束時間, 使用量),(編號3, 服務, 起始時間, 結束時間, 使用量)]
     # query_date[0] 拿出 (編號1, 服務, 起始時間, 結束時間, 使用量)
     # query_date[0][0] 拿出 編號1; query_date[0][1] 拿出服務; query_date[0][2] 拿出起始時間; query_date[0][3] 拿出結束時間; query_date[0][4] 拿出使用量
-    #datetime.strptime("2018-01-31", "%Y-%m-%d")
-    #print(len(query_date))
+    # datetime.strptime("2018-01-31", "%Y-%m-%d")
 
-    
     for i in range(len(query_date)):    
-        #print(query_date[i])
-        #print(query_date[i][0])
-
-        delta = timedelta(days=1)
-        total_days = datetime.strptime(query_date[i][3], "%Y-%m-%d") + delta - datetime.strptime(query_date[i][2], "%Y-%m-%d")  # 時間差
-        #print(total_days)
 
         StartDate = datetime.strptime(query_date[i][2], "%Y-%m-%d")
         EndDate = datetime.strptime(query_date[i][3], "%Y-%m-%d")
-
 
         RangeDate = timedelta(days=1)
 
@@ -89,95 +73,42 @@ def daily_aws_usage():
             j +=1
             
             StartDate = StartDate + RangeDate
-            #print(j)
 
-        StartDate = datetime.strptime(query_date[i][2], "%Y-%m-%d")
-        EndDate = datetime.strptime(query_date[i][3], "%Y-%m-%d")
-        RangeDate = timedelta(days=1)
-        
-        #for k in range(j):
-            #print(datetime.strptime(query_date[i][2], "%Y-%m-%d") + timedelta(days=k))
-
-        conn = sqlite3.connect('aws_usage.sqlite')
-
-        cur = conn.cursor()
-
-        tempProductName = query_date[i][1]  # 選定服務
-        #print(tempProductName)
-
-    #cur.execute('DROP TABLE temp')
-    
-
-        
-        #sql_cmd = '''
-        #    CREATE TABLE "temp"(
-        #    "TempTime" TEXT,
-        #    "UsageAmount" TEXT,
-        #    "tempProductName" TEXT
-        #    )
-        #    '''
-        
-    #cur.execute(sql_cmd)
         TempDictsmall = {}
         
         for k in range(j):
-            #TempTime = str(datetime.strptime(query_date[0][2], "%Y-%m-%d") + timedelta(days=j))
             TempTimeFull = str(datetime.strptime(query_date[i][2], "%Y-%m-%d") + timedelta(days=k)).split(' ')
-            print(TempTimeFull)
-            print('hi')
-            TempTimeNoHour = TempTimeFull[0] #這個不改, 不要搞混
+            TempTimeNoHour = TempTimeFull[0] #這個不改, 不要搞混, 變化時間值
             UsageAmount = query_date[i][4]
-            TempDictsmall.update( { TempTimeNoHour : UsageAmount} )
-            #cur.execute('''INSERT INTO temp(TempTime,UsageAmount,tempProductName) VALUES (?,?,?)''',(TempTimeNoHour,UsageAmount,tempProductName))
-            print(TempDictsmall)
-            #conn.commit()
-        TempDictbig.update( { query_date[i][1] : TempDictsmall} )
-    print(TempDictbig)
 
-    return 'ok'
+            try:
+                checkbig = TempDictbig[query_date[i][1]]
+
+                for day_had in checkbig:
+                    TempDictsmall.update({day_had:checkbig[day_had]})
+                    
+                if TempTimeNoHour in TempDictsmall.keys():
+                    origin = TempDictsmall[TempTimeNoHour]
+                    origin += UsageAmount
+                    TempDictsmall.update({TempTimeNoHour:origin})
 
 
+                else:
+                    TempDictsmall.update({TempTimeNoHour:UsageAmount})
 
-"""       
-    except:
-        #UsageAmount = cur.execute('''SELECT UsageAmount FROM Temp''').fetchall()
-        #print(UsageAmount)
-        #print(TempDict)
-        sql_cmd2 = '''
-            select TempTime, UsageAmount, tempProductName
-            from temp
-            group by TempTime
-            '''
-        query_datatmp = db.engine.execute(sql_cmd2).fetchall()
-        print(query_datatmp)
-        
-        #TempDict = {}
-        for j in range(i):
-            #TempTime = datetime.strptime(query_date[0][2], "%Y-%m-%d") + timedelta(days=j)
-            TempTimeFull = str(datetime.strptime(query_date[0][2], "%Y-%m-%d") + timedelta(days=j)).split(' ')
-            TempTimeNoHour = TempTimeFull[0]
-            print(TempTimeNoHour)
-            UsageAmount = query_date[0][4]
-            #for key in TempDict:
-            #    if key == TempTimeNoHour:
-            #        TempDict[key] += UsageAmount
-            #cur.execute('''INSERT INTO temp(TempTime,UsageAmount,tempProductName)
-                    #VALUES (?,?,?)''',(TempTime,tempAmount,tempProductName))
-"""
+                TempDictbig.update({query_date[i][1]:TempDictsmall})
+                    
+            except:
+                TempDictsmall.update({TempTimeNoHour:UsageAmount})
 
+        TempDictbig.update({query_date[i][1]:TempDictsmall})
+
+    return(TempDictbig)
 
 @app.route('/')
 def index():   
-    #sql_cmd = """
-    #    select *
-    #    from aws_usage
-    #    """
 
-    #query_data = db.engine.execute(sql_cmd)
-    #print(query_data)
     return 'ok'
-
-
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
