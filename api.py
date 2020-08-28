@@ -52,58 +52,56 @@ def daily_aws_usage():
         group by service_index
         """
 
-    query_date =db.engine.execute(StartEnd,lineItem_UsageAccountID).fetchall()
+    query_data =db.engine.execute(StartEnd,lineItem_UsageAccountID).fetchall()
     
-    TempDictbig = {}
+    TempDictBig = {}
     
-    # query_date 為 list 裡面放多個tuple, 格式為 [(編號1, 服務, 起始時間, 結束時間, 使用量),(編號2, 服務, 起始時間, 結束時間, 使用量),(編號3, 服務, 起始時間, 結束時間, 使用量)]
-    # query_date[0] 拿出 (編號1, 服務, 起始時間, 結束時間, 使用量)
-    # query_date[0][0] 拿出 編號1; query_date[0][1] 拿出服務; query_date[0][2] 拿出起始時間; query_date[0][3] 拿出結束時間; query_date[0][4] 拿出使用量
+    # query_data 為 list 裡面放多個tuple, 格式為 [(編號1, 服務, 起始時間, 結束時間, 使用量),(編號2, 服務, 起始時間, 結束時間, 使用量),(編號3, 服務, 起始時間, 結束時間, 使用量)]
+    # query_data[0] 拿出 (編號1, 服務, 起始時間, 結束時間, 使用量)
+    # query_data[0][0] 拿出 編號1; query_data[0][1] 拿出服務; query_data[0][2] 拿出起始時間; query_data[0][3] 拿出結束時間; query_data[0][4] 拿出使用量
     # datetime.strptime("2018-01-31", "%Y-%m-%d")
 
-    for i in range(len(query_date)):    
+    for i in range(len(query_data)):    
 
-        StartDate = datetime.strptime(query_date[i][2], "%Y-%m-%d")
-        EndDate = datetime.strptime(query_date[i][3], "%Y-%m-%d")
+        StartDate = datetime.strptime(query_data[i][2], "%Y-%m-%d")
+        EndDate = datetime.strptime(query_data[i][3], "%Y-%m-%d")
 
         RangeDate = timedelta(days=1)
 
         j = 0  #總天數
+        
         while StartDate <= EndDate:
             j +=1
-            
             StartDate = StartDate + RangeDate
 
-        TempDictsmall = {}
+        TempDictSmall = {}
         
         for k in range(j):
-            TempTimeFull = str(datetime.strptime(query_date[i][2], "%Y-%m-%d") + timedelta(days=k)).split(' ')
+            TempTimeFull = str(datetime.strptime(query_data[i][2], "%Y-%m-%d") + timedelta(days=k)).split(' ')
             TempTimeNoHour = TempTimeFull[0] #這個不改, 不要搞混, 變化時間值
-            UsageAmount = query_date[i][4]
+            UsageAmount = query_data[i][4]
 
             try:
-                checkbig = TempDictbig[query_date[i][1]]
+                checkBig = TempDictBig[query_data[i][1]]
 
-                for day_had in checkbig:
-                    TempDictsmall.update({day_had:checkbig[day_had]})
+                for day_had in checkBig:
+                    TempDictSmall.update({day_had:checkBig[day_had]})
                     
-                if TempTimeNoHour in TempDictsmall.keys():
-                    origin = TempDictsmall[TempTimeNoHour]
+                if TempTimeNoHour in TempDictSmall.keys():
+                    origin = TempDictSmall[TempTimeNoHour]
                     origin += UsageAmount
-                    TempDictsmall.update({TempTimeNoHour:origin})
-
+                    TempDictSmall.update({TempTimeNoHour:origin})
 
                 else:
-                    TempDictsmall.update({TempTimeNoHour:UsageAmount})
+                    TempDictSmall.update({TempTimeNoHour:UsageAmount})
 
-                TempDictbig.update({query_date[i][1]:TempDictsmall})
+                TempDictBig.update({query_data[i][1]:TempDictSmall})
                     
             except:
-                TempDictsmall.update({TempTimeNoHour:UsageAmount})
+                TempDictSmall.update({TempTimeNoHour:UsageAmount})                
+                TempDictBig.update({query_data[i][1]:TempDictSmall})
 
-        TempDictbig.update({query_date[i][1]:TempDictsmall})
-
-    return(TempDictbig)
+    return(TempDictBig)
 
 @app.route('/')
 def index():   
