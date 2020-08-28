@@ -56,7 +56,7 @@ with open(fname) as csv_file:
         cur.execute('''INSERT INTO aws_usage(bill_PayerAccountId,lineItem_UnblendedCost,lineItem_UnblendedRate,lineItem_UsageAccountId,lineItem_UsageAmount,lineItem_UsageStartDate,lineItem_UsageEndDate,product_ProductName)
             VALUES (?,?,?,?,?,?,?,?)''',(bill_PayerAccountId,lineItem_UnblendedCost,lineItem_UnblendedRate,lineItem_UsageAccountId,lineItem_UsageAmount,lineItem_UsageStartDate,lineItem_UsageEndDate,product_ProductName))
 
-        conn.commit()
+    conn.commit()
 
 conn.close()
 print('done')
