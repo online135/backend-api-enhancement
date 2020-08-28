@@ -99,7 +99,8 @@ def daily_aws_usage():
                     
             except:
                 TempDictSmall.update({TempTimeNoHour:UsageAmount})                
-                TempDictBig.update({query_data[i][1]:TempDictSmall})
+                TempDictBig.update({query_data[i][1]:TempDictSmall}) # update algorithms
+        #TempDictBig.update({query_data[i][1]:TempDictSmall})
 
     return(TempDictBig)
 
