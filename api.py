@@ -21,8 +21,10 @@ db.init_app(app)
 
 @app.route("/aws_usage", methods=['GET'])
 def aws_usage():
+
+    lineItem_UsageAccountID = request.args.get('lineItem_UsageAccountID')
+    
     try:
-        lineItem_UsageAccountID = request.args.get('lineItem_UsageAccountID')
 
         sql_cmd = """
                 select product_ProductName, lineItem_UnblendedCost
@@ -38,6 +40,7 @@ def aws_usage():
         return usage_all
     
     except:
+        
         if lineItem_UsageAccountID == None:
             return 'please select UsageAccountID'
     
@@ -54,13 +57,23 @@ def aws_usage():
 
             query_data = db.engine.execute(sql_cmd,lineItem_UsageAccountID).fetchall()
 
+            usage_all = json.dumps(dict(query_data)) # return 這個值
+
+            sql_cmd = """
+                CREATE TABLE usageAccountID(
+                lineItem_usageAccountID TEXT,
+                product_ProductName TEXT,
+                lineItem_UnblendedCost REAL
+                )
+                """
+
+            db.engine.execute(sql_cmd)
+
             for data in query_data:
                         print(data)
                         print(data[0])
                         db.engine.execute('''INSERT INTO usageAccountID(lineItem_usageAccountID, product_ProductName, lineItem_UnblendedCost)
             VALUES (?,?,?)''',(lineItem_UsageAccountID,data[0],data[1]))
-            
-            usage_all = json.dumps(dict(query_data))
 
             return usage_all
 
