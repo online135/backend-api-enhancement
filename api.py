@@ -34,6 +34,8 @@ def aws_usage():
                 """
         
         query_data = db.engine.execute(sql_cmd,lineItem_UsageAccountID).fetchall()
+
+        test = query_data[0] # the way to test whether the query_data is empty or not.
         
         usage_all = json.dumps(dict(query_data))
 
@@ -59,19 +61,20 @@ def aws_usage():
 
             usage_all = json.dumps(dict(query_data)) # return 這個值
 
-            sql_cmd = """
-                CREATE TABLE usageAccountID(
-                lineItem_usageAccountID TEXT,
-                product_ProductName TEXT,
-                lineItem_UnblendedCost REAL
-                )
-                """
-
-            db.engine.execute(sql_cmd)
+            try:
+                sql_cmd = """
+                    CREATE TABLE usageAccountID(
+                    lineItem_usageAccountID TEXT,
+                    product_ProductName TEXT,
+                    lineItem_UnblendedCost REAL
+                    )
+                    """
+                db.engine.execute(sql_cmd)
+                
+            except:
+                print('new data:{}'.format(lineItem_UsageAccountID))
 
             for data in query_data:
-                        print(data)
-                        print(data[0])
                         db.engine.execute('''INSERT INTO usageAccountID(lineItem_usageAccountID, product_ProductName, lineItem_UnblendedCost)
             VALUES (?,?,?)''',(lineItem_UsageAccountID,data[0],data[1]))
 
