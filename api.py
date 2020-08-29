@@ -21,23 +21,48 @@ db.init_app(app)
 
 @app.route("/aws_usage", methods=['GET'])
 def aws_usage():
-    
-    lineItem_UsageAccountID = request.args.get('lineItem_UsageAccountID')
+    try:
+        lineItem_UsageAccountID = request.args.get('lineItem_UsageAccountID')
 
-    if lineItem_UsageAccountID == None:
-        return 'please select UsageAccountID'
-    
-    else:    
         sql_cmd = """
-            select product_ProductName, sum(lineItem_Unblendedcost)
-            from aws_usage
-            where lineItem_UsageAccountID = ?
-            group by product_ProductName
-            """
+                select product_ProductName, lineItem_UnblendedCost
+                from usageAccountID
+                where lineItem_UsageAccountID = ?
+                group by lineItem_usageAccountID, product_ProductName
+                """
+        
         query_data = db.engine.execute(sql_cmd,lineItem_UsageAccountID).fetchall()
+        
         usage_all = json.dumps(dict(query_data))
-    
+
         return usage_all
+    
+    except:
+        if lineItem_UsageAccountID == None:
+            return 'please select UsageAccountID'
+    
+        else:
+            sql_cmd = """
+                select product_ProductName, sum(lineItem_Unblendedcost)
+                from aws_usage
+                where lineItem_UsageAccountID = ?
+                group by product_ProductName
+                """
+            
+            # query_data 得到一個 list 裡面有多個 tuple, 整體格式為 [(服務1, Cost1),(服務2, Cost2),(服務3, Cost3),(服務4, Cost4)]
+            # query_data[0] 得到 (服務1, Cost1), query_data[0][0] 得到 服務1, query_data[0][1] 得到 Cost1#
+
+            query_data = db.engine.execute(sql_cmd,lineItem_UsageAccountID).fetchall()
+
+            for data in query_data:
+                        print(data)
+                        print(data[0])
+                        db.engine.execute('''INSERT INTO usageAccountID(lineItem_usageAccountID, product_ProductName, lineItem_UnblendedCost)
+            VALUES (?,?,?)''',(lineItem_UsageAccountID,data[0],data[1]))
+            
+            usage_all = json.dumps(dict(query_data))
+
+            return usage_all
 
 
 @app.route("/daily_aws_usage", methods=['GET'])
@@ -75,7 +100,15 @@ def daily_aws_usage():
             StartDate = StartDate + RangeDate
 
         TempDictSmall = {}
-        
+
+        #try:
+        #    checkBig = TempDictBig[query_data[i][1]]
+        #                       
+        #    for day_had in checkBig:
+        #        TempDictSmall.update({day_had:checkBig[day_had]})
+        #except:
+        #    continue
+                               
         for k in range(j):
             TempTimeFull = str(datetime.strptime(query_data[i][2], "%Y-%m-%d") + timedelta(days=k)).split(' ')
             TempTimeNoHour = TempTimeFull[0] #這個不改, 不要搞混, 變化時間值
