@@ -8,8 +8,6 @@ import json
 import os
 import sqlite3
 
-global TempTimeNoHour
-
 db = SQLAlchemy()
 
 app = Flask(__name__)
@@ -88,89 +86,122 @@ def daily_aws_usage():
     
     lineItem_UsageAccountID = request.args.get('lineItem_UsageAccountID')
 
-    StartEnd = """
-        select service_index, product_ProductName, lineItem_UsageStartDate, lineItem_UsageEndDate, lineItem_UsageAmount
-        from aws_usage
-        where lineItem_UsageAccountID = ?
-        group by service_index
-        """
-
-    query_data =db.engine.execute(StartEnd,lineItem_UsageAccountID).fetchall()
-    
-    TempDictBig = {}
-    
-    # query_data 為 list 裡面放多個tuple, 格式為 [(編號1, 服務, 起始時間, 結束時間, 使用量),(編號2, 服務, 起始時間, 結束時間, 使用量),(編號3, 服務, 起始時間, 結束時間, 使用量)]
-    # query_data[0] 拿出 (編號1, 服務, 起始時間, 結束時間, 使用量)
-    # query_data[0][0] 拿出 編號1; query_data[0][1] 拿出服務; query_data[0][2] 拿出起始時間; query_data[0][3] 拿出結束時間; query_data[0][4] 拿出使用量
-    # datetime.strptime("2018-01-31", "%Y-%m-%d")
-
-    for i in range(len(query_data)):    
-
-        StartDate = datetime.strptime(query_data[i][2], "%Y-%m-%d")
-        EndDate = datetime.strptime(query_data[i][3], "%Y-%m-%d")
-
-        RangeDate = timedelta(days=1)
-
-        j = 0  #總天數
-        
-        while StartDate <= EndDate:
-            j +=1
-            StartDate = StartDate + RangeDate
-
-        TempDictSmall = {}
-
-        #try:
-        #    checkBig = TempDictBig[query_data[i][1]]
-        #                       
-        #    for day_had in checkBig:
-        #        TempDictSmall.update({day_had:checkBig[day_had]})
-        #except:
-        #    continue
-                               
-        for k in range(j):
-            TempTimeFull = str(datetime.strptime(query_data[i][2], "%Y-%m-%d") + timedelta(days=k)).split(' ')
-            TempTimeNoHour = TempTimeFull[0] #這個不改, 不要搞混, 變化時間值
-            UsageAmount = query_data[i][4]
-
-            try:
-                checkBig = TempDictBig[query_data[i][1]]
-
-                for day_had in checkBig:
-                    TempDictSmall.update({day_had:checkBig[day_had]})
-                    
-                if TempTimeNoHour in TempDictSmall.keys():
-                    origin = TempDictSmall[TempTimeNoHour]
-                    origin += UsageAmount
-                    TempDictSmall.update({TempTimeNoHour:origin})
-
-                else:
-                    TempDictSmall.update({TempTimeNoHour:UsageAmount})
-
-                TempDictBig.update({query_data[i][1]:TempDictSmall})
-                    
-            except:
-                TempDictSmall.update({TempTimeNoHour:UsageAmount})                
-                TempDictBig.update({query_data[i][1]:TempDictSmall}) # update algorithms
-        #TempDictBig.update({query_data[i][1]:TempDictSmall})
-
     try:
         sql_cmd = """
-            CREATE TABLE daily_usageAccountID(
-            lineItem_usageAccountID TEXT,
-            product_ProductName TEXT,
-            lineItem_UsageTotalDate REAL,
-            lineItem_UsageAmount REAl
-            )
-            """
-        db.engine.execute(sql_cmd)
-                
+                select product_productName
+                from daily_usageAccountID
+                where lineItem_usageAccountID = ?
+                group by product_productName
+                """
+
+        service_name = db.engine.execute(sql_cmd,lineItem_UsageAccountID).fetchall()
+
+        test = service_name[0] # the way to test whether the query_data is empty or not.
+
+        showDictBig = {}
+        
+        for m in range(len(service_name)):
+            sql_cmd = """
+                    select product_ProductName, lineItem_UsageDate, lineItem_UsageAmount
+                    from daily_usageAccountID
+                    where lineItem_UsageAccountID = ? and product_ProductName = ?
+                    """
+            
+            query_data2 = db.engine.execute(sql_cmd,lineItem_UsageAccountID, service_name[m][0]).fetchall()
+
+            # query_data (服務1, 日期1, 數量), (服務1, 日期1, 數量), (服務1, 日期3, 數量), (服務1, 日期1, 數量), (服務1, 日期1, 數量), (服務1, 日期3, 數量)
+            # query_data[0] (服務1, 日期, 數量), query_data[0][0] 服務1, query_data[0][1] 日期, query_data[0][2] 數量
+
+            showDictSmall = {}
+
+            for n in range(len(query_data2)):
+                showDictSmall.update({query_data2[n][1]:query_data2[n][2]})
+            showDictBig.update({service_name[m][0]:showDictSmall})
+            
+        return showDictBig
+    
     except:
+        lineItem_UsageAccountID = request.args.get('lineItem_UsageAccountID')
+        
+        StartEnd = """
+            select service_index, product_ProductName, lineItem_UsageStartDate, lineItem_UsageEndDate, lineItem_UsageAmount
+            from aws_usage
+            where lineItem_UsageAccountID = ?
+            group by service_index
+            """
+
+        query_data =db.engine.execute(StartEnd,lineItem_UsageAccountID).fetchall()
+
+        #print(query_data)
+    
+        TempDictBig = {}
+    
+        # query_data 為 list 裡面放多個tuple, 格式為 [(編號1, 服務, 起始時間, 結束時間, 使用量),(編號2, 服務, 起始時間, 結束時間, 使用量),(編號3, 服務, 起始時間, 結束時間, 使用量)]
+        # query_data[0] 拿出 (編號1, 服務, 起始時間, 結束時間, 使用量)
+        # query_data[0][0] 拿出 編號1; query_data[0][1] 拿出服務; query_data[0][2] 拿出起始時間; query_data[0][3] 拿出結束時間; query_data[0][4] 拿出使用量
+        # datetime.strptime("2018-01-31", "%Y-%m-%d")
+
+        for i in range(len(query_data)):    
+
+            StartDate = datetime.strptime(query_data[i][2], "%Y-%m-%d")
+            EndDate = datetime.strptime(query_data[i][3], "%Y-%m-%d")
+
+            RangeDate = timedelta(days=1)
+
+            j = 0  #總天數
+        
+            while StartDate <= EndDate:
+                j +=1
+                StartDate = StartDate + RangeDate
+
+            TempDictSmall = {}
+                               
+            for k in range(j):
+                TempTimeFull = str(datetime.strptime(query_data[i][2], "%Y-%m-%d") + timedelta(days=k)).split(' ')
+                TempTimeNoHour = TempTimeFull[0] #這個不改, 不要搞混, 變化時間值
+                UsageAmount = query_data[i][4]
+
+                try:
+                    checkBig = TempDictBig[query_data[i][1]]
+
+                    for day_had in checkBig:
+                        TempDictSmall.update({day_had:checkBig[day_had]})
+                    
+                    if TempTimeNoHour in TempDictSmall.keys():
+                        origin = TempDictSmall[TempTimeNoHour]
+                        origin += UsageAmount
+                        TempDictSmall.update({TempTimeNoHour:origin})
+
+                    else:
+                        TempDictSmall.update({TempTimeNoHour:UsageAmount})
+
+                    TempDictBig.update({query_data[i][1]:TempDictSmall})
+                    
+                except:
+                    TempDictSmall.update({TempTimeNoHour:UsageAmount})                
+                    TempDictBig.update({query_data[i][1]:TempDictSmall}) # update algorithms
+            #TempDictBig.update({query_data[i][1]:TempDictSmall})
+
+        try:
+            sql_cmd = """
+                CREATE TABLE daily_usageAccountID(
+                lineItem_usageAccountID TEXT,
+                product_ProductName TEXT,
+                lineItem_UsageDate REAL,
+                lineItem_UsageAmount REAl
+                )
+                """
+            db.engine.execute(sql_cmd)
+                
+        except:
+            print('Had created table daily_usageAccountID')
+            
         for data in TempDictBig:
             for day in TempDictBig[data]:
-                db.engine.execute('''INSERT INTO daily_usageAccountID(lineItem_usageAccountID, product_ProductName, lineItem_UsageTotalDate, lineItem_UsageAmount)
+                db.engine.execute('''INSERT INTO daily_usageAccountID(lineItem_usageAccountID, product_ProductName, lineItem_UsageDate, lineItem_UsageAmount)
                 VALUES (?,?,?,?)''',(lineItem_UsageAccountID,data,day,TempDictBig[data][day]))
 
-    return(TempDictBig)
+        return(TempDictBig)
 
 @app.route('/')
 def index():   
