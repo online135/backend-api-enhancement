@@ -8,6 +8,8 @@ import json
 import os
 import sqlite3
 
+global TempTimeNoHour
+
 db = SQLAlchemy()
 
 app = Flask(__name__)
@@ -150,6 +152,23 @@ def daily_aws_usage():
                 TempDictSmall.update({TempTimeNoHour:UsageAmount})                
                 TempDictBig.update({query_data[i][1]:TempDictSmall}) # update algorithms
         #TempDictBig.update({query_data[i][1]:TempDictSmall})
+
+    try:
+        sql_cmd = """
+            CREATE TABLE daily_usageAccountID(
+            lineItem_usageAccountID TEXT,
+            product_ProductName TEXT,
+            lineItem_UsageTotalDate REAL,
+            lineItem_UsageAmount REAl
+            )
+            """
+        db.engine.execute(sql_cmd)
+                
+    except:
+        for data in TempDictBig:
+            for day in TempDictBig[data]:
+                db.engine.execute('''INSERT INTO daily_usageAccountID(lineItem_usageAccountID, product_ProductName, lineItem_UsageTotalDate, lineItem_UsageAmount)
+                VALUES (?,?,?,?)''',(lineItem_UsageAccountID,data,day,TempDictBig[data][day]))
 
     return(TempDictBig)
 
