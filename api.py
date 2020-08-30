@@ -70,9 +70,12 @@ def aws_usage():
                     )
                     """
                 db.engine.execute(sql_cmd)
+                print('create table usageAccountID')
                 
             except:
-                print('new data:{}'.format(lineItem_UsageAccountID))
+                print('Had created table daily_usageAccountID')
+                
+            print('new data:{}'.format(lineItem_UsageAccountID))
 
             for data in query_data:
                         db.engine.execute('''INSERT INTO usageAccountID(lineItem_usageAccountID, product_ProductName, lineItem_UnblendedCost)
@@ -192,9 +195,12 @@ def daily_aws_usage():
                 )
                 """
             db.engine.execute(sql_cmd)
+            print('create table daily_usageAccountID')
                 
         except:
             print('Had created table daily_usageAccountID')
+
+        print('new data:{}'.format(lineItem_UsageAccountID))
             
         for data in TempDictBig:
             for day in TempDictBig[data]:
