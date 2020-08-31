@@ -33,3 +33,13 @@ Algorithms improved in api1 and api2
 2. From second time, extract the consequence from the newly created table
 
 When create table, add new data, show some information by using print
+
+----
+
+Use Windows Task Scheduler and script to delete the temporary table every one day
+
+![image](https://ftp.bmp.ovh/imgs/2020/08/58b938c070d78478.png)
+
+Windows Task Scheduler -> db.bat -> deletedb.sql
+
+(will reopen the server at that time, so It will be about 10 seconds that we can't get data when we rerun the server)
