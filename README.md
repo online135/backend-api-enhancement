@@ -29,7 +29,7 @@ http://127.0.0.1:5000/daily_aws_usage?lineItem_UsageAccountID=120403000000.0
 
 Algorithms improved in api1 and api2
 
-1. search the data in database, store the consequence in another table and return the consequence in first time
+1. search the data in database, store the consequence in another table and return the consequence at first time
 2. From second time, extract the consequence from the newly created table
 
 When create table, add new data, show some information by using print
