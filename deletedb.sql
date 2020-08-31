@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS daily_usageAccountID;
+DROP TABLE IF EXISTS usageAccountID
