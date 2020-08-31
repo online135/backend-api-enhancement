@@ -42,4 +42,4 @@ Use Windows Task Scheduler and script to delete the temporary table every one da
 
 Windows Task Scheduler -> db.bat -> deletedb.sql
 
-(will reopen the server at that time, so It will be about 10 seconds that we can't get data when we rerun the server)
+(Server will reopen every one day. At that time, we can't get data about 10 seconds)
