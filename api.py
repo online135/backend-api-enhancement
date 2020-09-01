@@ -157,8 +157,7 @@ def daily_aws_usage():
             TempDictSmall = {}
                                
             for k in range(j):
-                TempTimeFull = str(datetime.strptime(query_data[i][1], "%Y-%m-%d") + timedelta(days=k)).split(' ')
-                TempTimeNoHour = TempTimeFull[0] #這個不改, 不要搞混, 變化時間值
+                TempTime = str(datetime.strptime(query_data[i][1], "%Y-%m-%d") + timedelta(days=k)).split(' ')[0]  # 取得日期
                 UsageAmount = query_data[i][3]
 
                 try:
@@ -167,18 +166,18 @@ def daily_aws_usage():
                     for day_had in checkBig:
                         TempDictSmall.update({day_had:checkBig[day_had]})
                     
-                    if TempTimeNoHour in TempDictSmall.keys():
-                        origin = TempDictSmall[TempTimeNoHour]
+                    if TempTime in TempDictSmall.keys():
+                        origin = TempDictSmall[TempTime]
                         origin += UsageAmount
-                        TempDictSmall.update({TempTimeNoHour:origin})
+                        TempDictSmall.update({TempTime:origin})
 
                     else:
-                        TempDictSmall.update({TempTimeNoHour:UsageAmount})
+                        TempDictSmall.update({TempTime:UsageAmount})
 
                     TempDictBig.update({query_data[i][0]:TempDictSmall})
                     
                 except:
-                    TempDictSmall.update({TempTimeNoHour:UsageAmount})                
+                    TempDictSmall.update({TempTime:UsageAmount})                
                     TempDictBig.update({query_data[i][0]:TempDictSmall}) # update algorithms
             #TempDictBig.update({query_data[i][0]:TempDictSmall})
 
