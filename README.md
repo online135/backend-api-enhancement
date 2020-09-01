@@ -48,4 +48,4 @@ Windows Task Scheduler -> db.bat -> deletedb.sql
 version 2020/09/01 17:53 
 delete some SQL's "group by" command, speed up the algorithms
 
-=> SQL's searching shorten from O(2n) to O(n)
+=> SQL's searching shorten a little bit
