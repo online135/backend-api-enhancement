@@ -34,6 +34,9 @@ Algorithms improved in api1 and api2
 
 When create table, add new data, show some information by using print
 
+=> try this ID : 588275000000.0
+http://127.0.0.1:5000/daily_aws_usage?lineItem_UsageAccountID=588275000000.0
+
 ----
 
 Use Windows Task Scheduler and script to delete the temporary table every one day
