@@ -43,3 +43,9 @@ Use Windows Task Scheduler and script to delete the temporary table every one da
 Windows Task Scheduler -> db.bat -> deletedb.sql
 
 (Server will reopen every one day. At that time, we can't get data about 10 seconds)
+
+---
+version 2020/09/01 17:53 
+delete some SQL's "group by" command, speed up the algorithms
+
+=> SQL's searching shorten from O(n^2)  to O(n)
