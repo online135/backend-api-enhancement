@@ -13,7 +13,7 @@ http://localhost:<port>/api_1?<lineitem/usageaccountid>
 example : 
 http://127.0.0.1:5000/aws_usage?lineItem_UsageAccountID=120403000000.0
 
-![image](https://ftp.bmp.ovh/imgs/2020/08/7a50b900df855d71.png)
+![image](https://ftp.bmp.ovh/imgs/2020/09/de023a5fac52d443.png)
 --------
 Question 2
 
@@ -22,8 +22,8 @@ Get daily lineItem/UsageAmount grouping by product/productname
 http://localhost:<port>/api_2?<lineitem/usageaccountid>
 
 example : 
-http://127.0.0.1:5000/daily_aws_usage?lineItem_UsageAccountID=120403000000.0
-![image](https://ftp.bmp.ovh/imgs/2020/08/5273bf6439752af3.png)
+http://127.0.0.1:5000/daily_aws_usage?lineItem_UsageAccountID=445378576331.0
+![image](https://ftp.bmp.ovh/imgs/2020/09/0e34591a728de923.png)
 
 ----
 
