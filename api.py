@@ -52,7 +52,7 @@ def aws_usage():
                 where lineItem_UsageAccountID = ?
                 group by product_ProductName
                 """
-            
+
             # query_data 得到一個 list 裡面有多個 tuple, 整體格式為 [(服務1, Cost1),(服務2, Cost2),(服務3, Cost3),(服務4, Cost4)]
             # query_data[0] 得到 (服務1, Cost1), query_data[0][0] 得到 服務1, query_data[0][1] 得到 Cost1#
 
@@ -72,7 +72,7 @@ def aws_usage():
                 print('create table usageAccountID')
                 
             except:
-                print('Had created table daily_usageAccountID')
+                print('Had created table usageAccountID')
                 
             print('new data:{}'.format(lineItem_UsageAccountID))
 
@@ -118,6 +118,8 @@ def daily_aws_usage():
             for n in range(len(query_data2)):
                 showDictSmall.update({query_data2[n][1]:query_data2[n][2]})
             showDictBig.update({service_name[m][0]:showDictSmall})
+
+        showDictBig = json.dumps(showDictBig)
             
         return showDictBig
     
@@ -202,6 +204,8 @@ def daily_aws_usage():
             for day in TempDictBig[data]:
                 db.engine.execute('''INSERT INTO daily_usageAccountID(lineItem_usageAccountID, product_ProductName, lineItem_UsageDate, lineItem_UsageAmount)
                 VALUES (?,?,?,?)''',(lineItem_UsageAccountID,data,day,TempDictBig[data][day]))
+
+        TempDictBig = json.dumps(TempDictBig)
 
         return(TempDictBig)
 
