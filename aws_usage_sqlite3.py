@@ -28,7 +28,7 @@ CREATE TABLE "aws_usage"(
 
 
 fname=input('Enter the aws csv file name: ')
-if len(fname) < 1 : fname="output_old.csv"
+if len(fname) < 1 : fname="output.csv"
 
 with open(fname) as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
